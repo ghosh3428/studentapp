@@ -1,82 +1,77 @@
 
 package Controller;
 
-import Model.Student;
+import Model.Course;
+import Model.Modeljava;
+import Service.RegisterService;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
-import org.springframework.stereotype.Controller;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
-@Controller
-@RequestMapping(value="/login.htm")
+@RequestMapping(value="/Loginpage.htm")
 public class LoginController 
 {
-    @RequestMapping(method = RequestMethod.GET)
+    
+    private RegisterService rs;
+    
+    
+    
+    @RequestMapping(method= RequestMethod.GET)
     public ModelAndView getHandler()
     {
-        ModelAndView mv = new ModelAndView("login");
-        
-        mv.addObject("student", new Student());
-        
+        ModelAndView mv = new ModelAndView("Loginpage");
+        mv.addObject("student", new Modeljava());
         return mv;
-        
     }
     
-    @RequestMapping(method = RequestMethod.POST)
-    public ModelAndView postHandler(@ModelAttribute("student") Student s) throws ClassNotFoundException
+    
+    @RequestMapping(method= RequestMethod.POST)
+    public ModelAndView postHandler(@ModelAttribute("student") Modeljava s) throws ClassNotFoundException, SQLException 
     {
-        try
-        {
-             Class.forName("com.mysql.cj.jdbc.Driver");
-
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3307/pgpjava?user=root&password=yourpassword&useUnicode=true&useTimeZone=true&serverTimezone=UTC&autoReconnect=true&useSSL=false");
-
-            String query = "Select Email, password , student_name , student_age from student";
-            Statement pst = con.createStatement();
-
-           ResultSet rs =  pst.executeQuery(query);
-           
-           while(rs.next())
-           {
-               String id , pass;
-               
-               id = rs.getString(1);
-               pass= rs.getString(2);
-               
-               if(id.equals(s.getEmail()))
-               {
-                   if(pass.equals(s.getPassword()))
-                   {
-                        s.setStudent_age(rs.getInt(4));
-                        s.setStudent_name(rs.getString(3));
-                        
-                        ModelAndView mv = new ModelAndView("student");
-                        mv.addObject("valid" , s);
-                        con.close();
-                        return mv;
-                   }
-               }
-           }
-           
-           ModelAndView mv = new ModelAndView("login");
-           mv.addObject("error","Incorrect ID/Password");
-           con.close();
+       String result = rs.validateStudent(s);
+       if(result.equals("success"))
+       {
+           ApplicationContext ac = new ClassPathXmlApplicationContext("Controller/Spring-XMLConfig.xml");
+                   
+           ModelAndView mv = new ModelAndView("student");
+           mv.addObject("success","Welcome Student to NIIT JADAVPUR.");
+           mv.addObject("student" , rs.getstudent(s.getId()));
+           mv.addObject("course" , (Course)ac.getBean("courseBean"));
+           mv.addObject("courselist" , rs.getCourse());
            return mv;
-      
-        }
-        catch(SQLException e)
-                {
-                    e.printStackTrace();
-                    ModelAndView mv = new ModelAndView("login");
-                    mv.addObject("error","Incorrect ID/Password");
-                    return mv;
-                }
-        
+       }
+       else if(result.equals("incorrectpassword"))
+       {
+           ModelAndView mv = new ModelAndView("Loginpage");
+           mv.addObject("error","Incorrect Password");
+           return mv;
+       }
+       else if(result.equals("register"))
+       {
+           ModelAndView mv = new ModelAndView("register");
+           mv.addObject("error","Please register before LogIn");
+           return mv;
+       }
+       else
+       {
+           ModelAndView mv = new ModelAndView("Loginpage");
+           mv.addObject("error","error fetching data");
+           return mv;
+       }       
+    }       
+       
+    
+    
+    public void setRs(RegisterService rs) {
+        this.rs = rs;
     }
+    
 }

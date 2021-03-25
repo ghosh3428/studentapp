@@ -1,85 +1,75 @@
 
 package Controller;
 
-import Model.Student;
-
+import Model.Modeljava;
+import Service.RegisterService;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
-
-@Controller
 @RequestMapping(value="/register.htm")
-public class RegisterController 
+public class RegisterController
 {
     
+    private RegisterService rs;
     
-    @RequestMapping(method=RequestMethod.GET)
-    public ModelAndView handlerGet()
+    @RequestMapping(method= RequestMethod.GET)
+    public ModelAndView getHandler()
     {
-       Student s = new Student();
-       
-       ModelAndView mv = new ModelAndView("register");
-       mv.addObject("student", s);
-       
-       return (mv);
-       
+        ModelAndView mv = new ModelAndView("register");
+        mv.addObject("student", new Modeljava());
+        return mv;
     }
     
-    @RequestMapping(method=RequestMethod.POST)
-    public ModelAndView handlerPost(@ModelAttribute("student") Student s) throws ClassNotFoundException, SQLException
+    
+    @RequestMapping(method= RequestMethod.POST)
+    public ModelAndView postHandler(@ModelAttribute("student") Modeljava s) throws ClassNotFoundException, SQLException
     {
-        boolean result = true;
-        try
+        if(Integer.parseInt(s.getMarks()) > 90)
         {
-       Class.forName("com.mysql.cj.jdbc.Driver");
-
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3307/pgpjava?user=root&password=yourpassword&useUnicode=true&useTimeZone=true&serverTimezone=UTC&autoReconnect=true&useSSL=false");
-
-            String query = "Insert into student values(?,?,?,?)";
-            PreparedStatement pst = con.prepareStatement(query);
-
-            pst.setString(1, s.getStudent_name());
-            pst.setString(2, s.getPassword());
-            pst.setInt(3, s.getStudent_age());
-            pst.setString(4, s.getEmail());
-
-            pst.executeUpdate();
-
-            con.close();
-
-            
+            s.setGrade("A");
         }
-        catch(SQLException e)
-                {
-                    e.printStackTrace();
-                    result = false;
-                }
+        else if(Integer.parseInt(s.getMarks()) > 70)
+        {
+            s.setGrade("B");
+        }
+        else if(Integer.parseInt(s.getMarks()) > 50)
+        {
+            s.setGrade("C");
+        }
+        else if(Integer.parseInt(s.getMarks()) > 40)
+        {
+            s.setGrade("D");
+        }
+        else
+        {
+            s.setGrade("FAIL");
+        }
+         
         
+        boolean result = rs.insertData(s);
         if(result)
         {
-            ModelAndView mv = new ModelAndView("login");
-            
-            mv.addObject("message","You have successfully registered");
+            ModelAndView mv = new ModelAndView("Loginpage");
+            mv.addObject("success" , "You have successfully registered.");
             return mv;
         }
         else
         {
             ModelAndView mv = new ModelAndView("register");
-            
-            mv.addObject("message","Error registering student");
-            return mv;  
+            mv.addObject("error" , "Error registering student.");
+            return mv;
         }
-      
-   
     }
 
    
-  
+    public void setRs(RegisterService rs) 
+    {
+        this.rs = rs;
+    }
 }

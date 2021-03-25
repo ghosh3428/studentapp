@@ -8,19 +8,27 @@ xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.sprin
 http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
 http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
     
-    <context:component-scan base-package="Controller" />
     
-    <mvc:annotation-driven />
-    
-    <bean id="viewResolver" class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+    <bean id="viewResolver" 
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver">
         <property name="prefix" value="/WEB-INF/jsp/"/>
         <property name="suffix" value=".jsp"/>
     </bean>
     
+    <context:component-scan base-package="Controller" />
     
-  
+    <mvc:annotation-driven />
     
-    <bean id="registerController" class="Controller.RegisterController" />
-    <bean id="loginController" class="Controller.LoginController" />
+    <bean id="registerService" class="Service.RegisterService" />
+    
+    <bean id="registerController" class="Controller.RegisterController" >
+        <property name="rs" ref="registerService" />
+    </bean>
+    
+    <bean id="loginController" class="Controller.LoginController" >
+        <property name="rs" ref="registerService" />
+    </bean>
 
 </beans>
+
+

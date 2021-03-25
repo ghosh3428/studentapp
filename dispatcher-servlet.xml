@@ -20,8 +20,8 @@
         <property name="mappings">
             <props>
                 <prop key="index.htm">indexController</prop>
-                <prop key="login.htm">loginController</prop>
                 <prop key="register.htm">registerController</prop>
+                <prop key="Loginpage.htm">loginController</prop>
             </props>
         </property>
     </bean>
@@ -38,7 +38,18 @@
           class="org.springframework.web.servlet.mvc.ParameterizableViewController"
           p:viewName="index" />
     
-     
-     
-
+    <!--LOGIN CONTROLLER -->
+    <bean name="loginController"
+          class="org.springframework.web.servlet.mvc.ParameterizableViewController"
+          p:viewName="Loginpage" />
+    
+    <!--REGISTER CONTROLLER -->
+    <bean name="registerController"
+          class="org.springframework.web.servlet.mvc.ParameterizableViewController"
+          p:viewName="register" />
+    
+    
+    <bean class="Controller.RegisterController" p:rs-ref="registerService" />
+    
+    <bean class="Controller.LoginController" p:rs-ref="registerService" />
 </beans>
